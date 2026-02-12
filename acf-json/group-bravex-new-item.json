@@ -1,0 +1,23 @@
+{
+  "key": "group_bravex_new_item",
+  "title": "Bravex New Item",
+  "fields": [
+    {"key": "field_new_item_product_id","label": "Product ID","name": "product_id","type": "number","min": 1},
+    {"key": "field_new_item_price","label": "Price","name": "price","type": "text"},
+    {"key": "field_new_item_size","label": "Size","name": "size","type": "text"},
+    {"key": "field_new_item_image","label": "Image","name": "image","type": "image","return_format": "array","preview_size": "medium"}
+  ],
+  "location": [
+    [
+      {"param": "post_type", "operator": "==", "value": "new_item"}
+    ]
+  ],
+  "position": "normal",
+  "style": "default",
+  "label_placement": "top",
+  "instruction_placement": "label",
+  "hide_on_screen": "",
+  "active": true,
+  "description": "",
+  "show_in_rest": 0
+}
