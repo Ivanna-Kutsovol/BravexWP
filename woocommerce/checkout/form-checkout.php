@@ -29,7 +29,7 @@ function bravex_value($checkout, $key) {
         <button class="checkout__step" type="button">Payment</button>
     </nav>
 
-    <form name="checkout" method="post" class="checkout__form woocommerce-checkout" action="<?php echo esc_url(wc_get_checkout_url()); ?>" enctype="multipart/form-data">
+    <form id="bravex-checkout-form" name="checkout" method="post" class="checkout__form woocommerce-checkout" action="<?php echo esc_url(wc_get_checkout_url()); ?>" enctype="multipart/form-data">
         <?php do_action('woocommerce_checkout_before_customer_details'); ?>
 
         <section class="checkout__section">
@@ -79,34 +79,59 @@ function bravex_value($checkout, $key) {
         <section class="checkout__section">
         <h2 class="checkout__section-title">Shipping Method</h2>
 
-        <?php if (WC()->cart->needs_shipping() && WC()->cart->show_shipping()) : ?>
-            <?php
+        <?php
+        $has_shipping_methods = false;
+        if (WC()->cart->needs_shipping() && WC()->cart->show_shipping()) :
             $packages = WC()->shipping()->get_packages();
             $chosen_methods = WC()->session->get('chosen_shipping_methods', []);
             foreach ($packages as $i => $package) :
                 $available_methods = $package['rates'];
+                if (empty($available_methods)) {
+                    continue;
+                }
                 foreach ($available_methods as $method) :
-                    $checked = isset($chosen_methods[$i]) && $method->id === $chosen_methods[$i];
-                    $subtitle = $method->get_meta_data() ? '' : '';
-            ?>
-            <label class="checkout__radio">
-                <input type="radio" name="shipping_method[<?php echo esc_attr($i); ?>]" value="<?php echo esc_attr($method->id); ?>" <?php checked($checked); ?> />
-                <span class="checkout__radio-mark"></span>
-                <span class="checkout__radio-text">
-                    <span class="checkout__radio-title"><?php echo esc_html($method->get_label()); ?></span>
-                </span>
-                <span class="checkout__price"><?php echo wp_kses_post(wc_price($method->get_cost())); ?></span>
-            </label>
-            <?php
+                    $has_shipping_methods = true;
+                    $checked = isset($chosen_methods[$i]) ? $method->id === $chosen_methods[$i] : false;
+                    ?>
+                    <label class="checkout__radio">
+                        <input type="radio" name="shipping_method[<?php echo esc_attr($i); ?>]" value="<?php echo esc_attr($method->id); ?>" <?php checked($checked); ?> />
+                        <span class="checkout__radio-mark"></span>
+                        <span class="checkout__radio-text">
+                            <span class="checkout__radio-title"><?php echo esc_html($method->get_label()); ?></span>
+                        </span>
+                        <span class="checkout__price"><?php echo wp_kses_post(wc_price($method->get_cost())); ?></span>
+                    </label>
+                    <?php
                 endforeach;
             endforeach;
+        endif;
+
+        if (!$has_shipping_methods) :
             ?>
-        <?php else : ?>
-            <label class="checkout__radio">
-                <input type="radio" name="shipping_method[0]" value="no_shipping" checked />
+            <input type="hidden" name="shipping_method[0]" value="no_shipping" />
+            <label class="checkout__radio checkout__radio--mock">
+                <input type="radio" checked disabled />
                 <span class="checkout__radio-mark"></span>
                 <span class="checkout__radio-text">
-                    <span class="checkout__radio-title"><?php esc_html_e('Pick up In-Store', 'woocommerce'); ?></span>
+                    <span class="checkout__radio-title">Express Delivery with Signature</span>
+                    <span class="checkout__radio-subtitle">Delivery By Monday 14/07</span>
+                </span>
+                <span class="checkout__price">$ 0.00</span>
+            </label>
+            <label class="checkout__radio checkout__radio--mock">
+                <input type="radio" disabled />
+                <span class="checkout__radio-mark"></span>
+                <span class="checkout__radio-text">
+                    <span class="checkout__radio-title">Next Day with Signature</span>
+                    <span class="checkout__radio-subtitle">Order Before 3 PM ET On Friday, July 11, 2025,<br>And Receive It On Saturday, July 12, 2025</span>
+                </span>
+                <span class="checkout__price">$ 0.00</span>
+            </label>
+            <label class="checkout__radio checkout__radio--mock">
+                <input type="radio" disabled />
+                <span class="checkout__radio-mark"></span>
+                <span class="checkout__radio-text">
+                    <span class="checkout__radio-title">Pick up In-Store</span>
                 </span>
             </label>
         <?php endif; ?>
@@ -127,20 +152,27 @@ function bravex_value($checkout, $key) {
         <div class="cart__summary__wrapper">
             <div class="cart__summary__shippingWrapper">
                 <p class="cart__summary__label">Express Delivery</p>
-                <p class="cart__summary__delivery"><?php echo esc_html(WC()->cart->get_shipping_method_full_label()); ?></p>
+                <p class="cart__summary__delivery">
+                    <?php
+                    if (WC()->cart->needs_shipping()) {
+                        echo esc_html__('Calculated at checkout', 'woocommerce');
+                    } else {
+                        echo esc_html__('No shipping required', 'woocommerce');
+                    }
+                    ?>
+                </p>
             </div>
-            <p class="cart__summary__price"><?php wc_cart_totals_shipping_html(); ?></p>
+            <p class="cart__summary__price"><?php echo wp_kses_post(wc_price((float) WC()->cart->get_shipping_total())); ?></p>
         </div>
         <span class="cart__summary__line"></span>
         <div class="cart__summary__wrapper">
             <p class="cart__summary__label">Total</p>
             <p class="cart__summary__price"><?php wc_cart_totals_order_total_html(); ?></p>
         </div>
-        <div class="checkout__payment">
-            <div id="order_review" class="woocommerce-checkout-review-order">
-            <?php do_action('woocommerce_checkout_order_review'); ?>
-            </div>
-        </div>
+        <button type="submit" class="cart__summary__btn" form="bravex-checkout-form">
+            Continue
+            <img class="cart__summary__arrow" src="<?php echo esc_url(get_template_directory_uri()); ?>/assets/img/arrowCart.svg" alt="arrow">
+        </button>
     </section>
     </div>
 

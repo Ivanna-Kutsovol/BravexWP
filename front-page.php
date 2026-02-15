@@ -62,7 +62,6 @@ function bravex_image_url($field_name) {
             <?php endforeach; ?>
 
             <div class="bottom" id="bottom"></div>
-            </div>
         </div>
         <div class="hero__shadow"></div>
     </section>
@@ -249,7 +248,7 @@ function bravex_image_url($field_name) {
                         </div>
                     </div>
                     <?php if ($product_id) : ?>
-                        <a class="newItems__plus" href="<?php echo esc_url(add_query_arg('add-to-cart', $product_id, home_url('/'))); ?>">+</a>
+                        <a class="newItems__plus" href="<?php echo esc_url(add_query_arg('bravex-add', (int) $product_id, home_url('/'))); ?>">+</a>
                     <?php else : ?>
                         <span class="newItems__plus">+</span>
                     <?php endif; ?>

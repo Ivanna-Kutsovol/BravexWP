@@ -25,6 +25,18 @@ if (WC()->cart->is_empty()) {
                 $product_image = $product->get_image();
                 $item_price = wc_price($cart_item['line_subtotal']);
                 $item_meta = wc_get_formatted_cart_item_data($cart_item, true);
+                $size_text = '';
+                $item_data = apply_filters('woocommerce_get_item_data', [], $cart_item);
+                foreach ($item_data as $data_row) {
+                    if (isset($data_row['key']) && $data_row['key'] === 'Size') {
+                        $raw_size = $data_row['display'] ?? ($data_row['value'] ?? '');
+                        $size_text = wp_strip_all_tags((string) $raw_size);
+                        break;
+                    }
+                }
+                if ($size_text === '' && !empty($item_meta)) {
+                    $size_text = wp_strip_all_tags((string) $item_meta);
+                }
             ?>
             <div class="cart__item">
                 <div class="cart__main">
@@ -37,8 +49,8 @@ if (WC()->cart->is_empty()) {
                         <?php if ($product->get_short_description()) : ?>
                             <p class="cart__description"><?php echo wp_kses_post($product->get_short_description()); ?></p>
                         <?php endif; ?>
-                        <?php if (!empty($item_meta)) : ?>
-                            <p class="cart__size"><?php echo wp_kses_post($item_meta); ?></p>
+                        <?php if ($size_text !== '') : ?>
+                            <p class="cart__size"><?php echo esc_html($size_text); ?></p>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -62,9 +74,8 @@ if (WC()->cart->is_empty()) {
         <div class="cart__summary__wrapper">
             <div class="cart__summary__shippingWrapper">
                 <p class="cart__summary__label">Express Delivery</p>
-                <p class="cart__summary__delivery"><?php echo esc_html(WC()->cart->get_shipping_method_full_label()); ?></p>
             </div>
-            <p class="cart__summary__price"><?php wc_cart_totals_shipping_html(); ?></p>
+            <p class="cart__summary__price"><?php echo wp_kses_post(wc_price((float) WC()->cart->get_shipping_total())); ?></p>
         </div>
         <span class="cart__summary__line"></span>
         <div class="cart__summary__wrapper">

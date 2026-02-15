@@ -79,6 +79,9 @@
 .checkout__radio:last-child {
     border-bottom: none;
 }
+.checkout__radio--mock {
+    border-bottom: none;
+}
 
 .checkout__radio input {
     position: absolute;
